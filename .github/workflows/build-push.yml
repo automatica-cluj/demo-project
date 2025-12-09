@@ -31,11 +31,11 @@ jobs:
           # Get the latest tag
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           echo "Latest tag: ${LATEST_TAG:-none}"
-	  if [ -n "$LATEST_TAG" ]; then
-		COMMITS=$(git log ${LATEST_TAG}..HEAD --oneline)
-	  else
-  		COMMITS=$(git log HEAD --oneline)
-	  fi
+          if [ -n "$LATEST_TAG" ]; then
+            COMMITS=$(git log ${LATEST_TAG}..HEAD --oneline)
+          else
+            COMMITS=$(git log HEAD --oneline)
+          fi
           echo "Commits since last tag:"
           echo "$COMMITS"
           
