@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      
+      - name: Run tests
+        run: mvn test -Dspring.profiles.active=test
+        env:
+          SPRING_PROFILES_ACTIVE: test
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: target/surefire-reports/
+          retention-days: 30
+
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      
+      - name: Check dependencies
+        run: mvn dependency:analyze
+      
+      - name: Verify code style
+        run: mvn verify -DskipTests
+
+  build-verification:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      
+      - name: Build JAR
+        run: mvn clean package -DskipTests
+      
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-jar
+          path: target/*.jar
+          retention-days: 7

@@ -1,0 +1,209 @@
+name: Build and Push to GHCR
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  semantic-version:
+    name: Determine Semantic Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      new_release: ${{ steps.version.outputs.new_release }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install semantic-release
+        run: |
+          npm install -g semantic-release@23.0.0
+          npm install -g @semantic-release/git@10.0.1
+          npm install -g @semantic-release/changelog@6.0.3
+      
+      - name: Determine version
+        id: version
+        run: |
+          # Get the latest tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Latest tag: $LATEST_TAG"
+          
+          # Get commits since last tag
+          COMMITS=$(git log ${LATEST_TAG}..HEAD --oneline)
+          echo "Commits since last tag:"
+          echo "$COMMITS"
+          
+          # Parse version from tag
+          CURRENT_VERSION=${LATEST_TAG#v}
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+          
+          # Determine version bump
+          NEW_RELEASE="false"
+          if echo "$COMMITS" | grep -qE "^[a-f0-9]+ (feat!|BREAKING CHANGE)"; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+            NEW_RELEASE="true"
+          elif echo "$COMMITS" | grep -qE "^[a-f0-9]+ feat(\(.+\))?:"; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+            NEW_RELEASE="true"
+          elif echo "$COMMITS" | grep -qE "^[a-f0-9]+ (fix|perf|refactor)(\(.+\))?:"; then
+            PATCH=$((PATCH + 1))
+            NEW_RELEASE="true"
+          fi
+          
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "version=v${NEW_VERSION}" >> $GITHUB_OUTPUT
+          echo "new_release=${NEW_RELEASE}" >> $GITHUB_OUTPUT
+          echo "New version: v${NEW_VERSION}"
+          echo "New release: ${NEW_RELEASE}"
+
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: semantic-version
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ needs.semantic-version.outputs.version }}
+            type=sha,prefix=sha-
+            type=ref,event=branch
+            type=raw,value={{date 'YYYYMMDD-HHmmss'}}
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Generate summary
+        run: |
+          echo "## Docker Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Image Tags" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Pull Command" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [semantic-version, build-and-push]
+    if: needs.semantic-version.outputs.new_release == 'true'
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Generate changelog
+        id: changelog
+        run: |
+          VERSION="${{ needs.semantic-version.outputs.version }}"
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          if [ -z "$PREVIOUS_TAG" ]; then
+            COMMITS=$(git log --oneline --pretty=format:"- %s (%h)" HEAD)
+          else
+            COMMITS=$(git log --oneline --pretty=format:"- %s (%h)" ${PREVIOUS_TAG}..HEAD)
+          fi
+          
+          # Create changelog
+          CHANGELOG="## What's Changed\n\n"
+          
+          # Features
+          FEATURES=$(echo "$COMMITS" | grep -E "feat(\(.+\))?:" || true)
+          if [ -n "$FEATURES" ]; then
+            CHANGELOG="${CHANGELOG}### ✨ Features\n${FEATURES}\n\n"
+          fi
+          
+          # Bug Fixes
+          FIXES=$(echo "$COMMITS" | grep -E "fix(\(.+\))?:" || true)
+          if [ -n "$FIXES" ]; then
+            CHANGELOG="${CHANGELOG}### 🐛 Bug Fixes\n${FIXES}\n\n"
+          fi
+          
+          # Performance
+          PERF=$(echo "$COMMITS" | grep -E "perf(\(.+\))?:" || true)
+          if [ -n "$PERF" ]; then
+            CHANGELOG="${CHANGELOG}### ⚡ Performance\n${PERF}\n\n"
+          fi
+          
+          # Other changes
+          OTHER=$(echo "$COMMITS" | grep -vE "(feat|fix|perf)(\(.+\))?:" || true)
+          if [ -n "$OTHER" ]; then
+            CHANGELOG="${CHANGELOG}### 🔧 Other Changes\n${OTHER}\n\n"
+          fi
+          
+          # Docker information
+          CHANGELOG="${CHANGELOG}### 🐳 Docker Image\n"
+          CHANGELOG="${CHANGELOG}\`\`\`bash\n"
+          CHANGELOG="${CHANGELOG}docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}\n"
+          CHANGELOG="${CHANGELOG}\`\`\`\n"
+          
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.semantic-version.outputs.version }}
+          release_name: Release ${{ needs.semantic-version.outputs.version }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: false
