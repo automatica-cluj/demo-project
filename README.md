@@ -7,7 +7,7 @@
 
 A Spring Boot application for reporting and managing fake news sources. Users can report suspicious news sources, and administrators can verify and approve reports for public visibility.
 
-**This project is educational, for demonstration purposes only.**
+**This project is educational, for demonstration purposes only!**
 
 ## Features
 
