@@ -16,7 +16,7 @@
     <artifactId>fake-news-reporter</artifactId>
     <version>1.0.0</version>
     <name>Fake News Reporter</name>
-    <description>Application for reporting and managing fake news sources</description>
+    <description>Application for reporting and managing fake news sources.</description>
     
     <properties>
         <java.version>17</java.version>
