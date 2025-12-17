@@ -5,7 +5,7 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/automatica-cluj/demo-project)](https://github.com/automatica-cluj/demo-project/releases)
 [![Docker Image](https://img.shields.io/badge/docker-ghcr.io-blue)](https://github.com/automatica-cluj/demo-project/pkgs/container/demo-project)
 
-A Spring Boot application for reporting and managing fake news sources. Users can report suspicious news sources, and administrators can verify and approve reports for public visibility!
+A Spring Boot application for reporting and managing fake news sources. Users can report suspicious news sources, and administrators can verify and approve reports for public visibility!!!!!
 
 **This project is educational, for demonstration purposes only!**
 
