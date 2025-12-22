@@ -10,8 +10,12 @@ import java.util.List;
 public interface FakeNewsReportRepository extends JpaRepository<FakeNewsReport, Long> {
     
     List<FakeNewsReport> findByApprovedTrueOrderByApprovedAtDesc();
+
+    List<FakeNewsReport> findByRejectedTrueOrderByRejectedAtDesc();
     
-    List<FakeNewsReport> findByApprovedFalseOrderByReportedAtDesc();
+    List<FakeNewsReport> findByApprovedFalseAndRejectedFalseOrderByReportedAtDesc();
+
+    List<FakeNewsReport> findByApprovedTrueOrRejectedTrueOrderByReportedAtDesc();
     
     List<FakeNewsReport> findAllByOrderByReportedAtDesc();
 }

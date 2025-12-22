@@ -20,17 +20,17 @@
     </header>
 
     <main class="container">
-        <h2>Verified Fake News Reports</h2>
+        <h2>Fake News Reports</h2>
         
         <div th:if="${reports.isEmpty()}" class="no-reports">
-            <p>No verified reports yet.</p>
+            <p>No reports yet.</p>
         </div>
         
         <div class="reports-list" th:if="${!reports.isEmpty()}">
             <div class="report-card" th:each="report : ${reports}">
                 <div class="report-header">
                     <span class="category-badge" th:text="${report.category}"></span>
-                    <span class="date" th:text="${#temporals.format(report.approvedAt, 'MMM dd, yyyy')}"></span>
+                    <span class="date" th:text="${#temporals.format(report.approved ? report.approvedAt : report.rejectedAt, 'MMM dd, yyyy')}"></span>
                 </div>
                 <h3 th:text="${report.newsSource}"></h3>
                 <p class="url">
@@ -39,7 +39,8 @@
                 </p>
                 <p class="description" th:text="${report.description}"></p>
                 <div class="report-footer">
-                    <span class="verified">✓ Verified by Admin</span>
+                    <span th:if="${report.approved}" class="verified">✓ Verified by Admin</span>
+                    <span th:if="${report.rejected}" class="rejected">✗ Rejected by Admin</span>
                 </div>
             </div>
         </div>

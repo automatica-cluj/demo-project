@@ -39,6 +39,12 @@ public class FakeNewsReport {
     @Column
     private String approvedBy;
 
+    @Column(nullable = false)
+    private boolean rejected = false;
+
+    @Column
+    private LocalDateTime rejectedAt;
+
     public FakeNewsReport() {
         this.reportedAt = LocalDateTime.now();
     }
@@ -113,5 +119,21 @@ public class FakeNewsReport {
 
     public void setApprovedBy(String approvedBy) {
         this.approvedBy = approvedBy;
+    }
+
+    public boolean isRejected() {
+        return rejected;
+    }
+
+    public void setRejected(boolean rejected) {
+        this.rejected = rejected;
+    }
+
+    public LocalDateTime getRejectedAt() {
+        return rejectedAt;
+    }
+
+    public void setRejectedAt(LocalDateTime rejectedAt) {
+        this.rejectedAt = rejectedAt;
     }
 }

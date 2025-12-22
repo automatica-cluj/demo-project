@@ -23,14 +23,14 @@ public class HomeController {
 
     @GetMapping("/")
     public String home(Model model) {
-        List<FakeNewsReport> reports = reportService.getApprovedReports();
+        List<FakeNewsReport> reports = reportService.getPublicReports();
         model.addAttribute("reports", reports);
         return "index";
     }
 
     @GetMapping("/reports")
     public String reports(Model model) {
-        List<FakeNewsReport> reports = reportService.getApprovedReports();
+        List<FakeNewsReport> reports = reportService.getPublicReports();
         model.addAttribute("reports", reports);
         return "reports";
     }

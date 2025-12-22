@@ -20,8 +20,16 @@ public class FakeNewsReportService {
         return reportRepository.findByApprovedTrueOrderByApprovedAtDesc();
     }
 
+    public List<FakeNewsReport> getRejectedReports() {
+        return reportRepository.findByRejectedTrueOrderByRejectedAtDesc();
+    }
+
     public List<FakeNewsReport> getPendingReports() {
-        return reportRepository.findByApprovedFalseOrderByReportedAtDesc();
+        return reportRepository.findByApprovedFalseAndRejectedFalseOrderByReportedAtDesc();
+    }
+
+    public List<FakeNewsReport> getPublicReports() {
+        return reportRepository.findByApprovedTrueOrRejectedTrueOrderByReportedAtDesc();
     }
 
     public List<FakeNewsReport> getAllReports() {
@@ -43,8 +51,21 @@ public class FakeNewsReportService {
         if (reportOpt.isPresent()) {
             FakeNewsReport report = reportOpt.get();
             report.setApproved(true);
+            report.setRejected(false);
             report.setApprovedAt(LocalDateTime.now());
             report.setApprovedBy(approvedBy);
+            reportRepository.save(report);
+        }
+    }
+
+    @Transactional
+    public void rejectReport(Long id) {
+        Optional<FakeNewsReport> reportOpt = reportRepository.findById(id);
+        if (reportOpt.isPresent()) {
+            FakeNewsReport report = reportOpt.get();
+            report.setApproved(false);
+            report.setRejected(true);
+            report.setRejectedAt(LocalDateTime.now());
             reportRepository.save(report);
         }
     }

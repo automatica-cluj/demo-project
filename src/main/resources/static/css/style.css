@@ -125,6 +125,16 @@ main {
     background-color: #229954;
 }
 
+.btn-warning {
+    background-color: #f39c12;
+    color: white;
+    padding: 0.5rem 1rem;
+}
+
+.btn-warning:hover {
+    background-color: #d68910;
+}
+
 .btn-danger {
     background-color: #e74c3c;
     color: white;
@@ -237,6 +247,12 @@ main {
     font-size: 0.9rem;
 }
 
+.rejected {
+    color: #e74c3c;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
 .no-reports {
     text-align: center;
     padding: 3rem;
@@ -341,6 +357,10 @@ main {
 
 .admin-report-card.approved {
     border-left-color: #27ae60;
+}
+
+.admin-report-card.rejected {
+    border-left-color: #e74c3c;
 }
 
 .admin-actions {

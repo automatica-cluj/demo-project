@@ -29,22 +29,23 @@
         </section>
 
         <section class="reports-section">
-            <h3>Recently Verified Reports</h3>
+            <h3>Recent Reports</h3>
             <div th:if="${reports.isEmpty()}" class="no-reports">
-                <p>No verified reports yet. Be the first to report fake news!</p>
+                <p>No reports yet. Be the first to report fake news!</p>
             </div>
             
             <div class="reports-grid" th:if="${!reports.isEmpty()}">
                 <div class="report-card" th:each="report : ${reports}">
                     <div class="report-header">
                         <span class="category-badge" th:text="${report.category}"></span>
-                        <span class="date" th:text="${#temporals.format(report.approvedAt, 'MMM dd, yyyy')}"></span>
+                        <span class="date" th:text="${#temporals.format(report.approved ? report.approvedAt : report.rejectedAt, 'MMM dd, yyyy')}"></span>
                     </div>
                     <h4 th:text="${report.newsSource}"></h4>
                     <p class="url" th:text="${report.url}"></p>
                     <p class="description" th:text="${report.description}"></p>
                     <div class="report-footer">
-                        <span class="verified">✓ Verified</span>
+                        <span th:if="${report.approved}" class="verified">✓ Verified</span>
+                        <span th:if="${report.rejected}" class="rejected">✗ Rejected</span>
                     </div>
                 </div>
             </div>

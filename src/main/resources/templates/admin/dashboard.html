@@ -47,6 +47,9 @@
                         <form th:action="@{/admin/approve/{id}(id=${report.id})}" method="post" style="display: inline;">
                             <button type="submit" class="btn btn-success">Approve</button>
                         </form>
+                        <form th:action="@{/admin/reject/{id}(id=${report.id})}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-warning">Reject</button>
+                        </form>
                         <form th:action="@{/admin/delete/{id}(id=${report.id})}" method="post" style="display: inline;">
                             <button type="submit" class="btn btn-danger" 
                                     onclick="return confirm('Are you sure you want to delete this report?');">Delete</button>
@@ -76,6 +79,37 @@
                     <p class="description" th:text="${report.description}"></p>
                     <div class="report-footer">
                         <span class="verified">✓ Verified by: <span th:text="${report.approvedBy}"></span></span>
+                    </div>
+                    <div class="admin-actions">
+                        <form th:action="@{/admin/delete/{id}(id=${report.id})}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-danger btn-sm" 
+                                    onclick="return confirm('Are you sure you want to delete this report?');">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section">
+            <h2>Rejected Reports</h2>
+            <div th:if="${rejectedReports.isEmpty()}" class="no-reports">
+                <p>No rejected reports yet.</p>
+            </div>
+            
+            <div class="admin-reports-list" th:if="${!rejectedReports.isEmpty()}">
+                <div class="admin-report-card rejected" th:each="report : ${rejectedReports}">
+                    <div class="report-header">
+                        <span class="category-badge" th:text="${report.category}"></span>
+                        <span class="date" th:text="${#temporals.format(report.rejectedAt, 'MMM dd, yyyy HH:mm')}"></span>
+                    </div>
+                    <h3 th:text="${report.newsSource}"></h3>
+                    <p class="url">
+                        <strong>URL:</strong> 
+                        <a th:href="${report.url}" target="_blank" rel="noopener noreferrer" th:text="${report.url}"></a>
+                    </p>
+                    <p class="description" th:text="${report.description}"></p>
+                    <div class="report-footer">
+                        <span class="rejected">✗ Rejected</span>
                     </div>
                     <div class="admin-actions">
                         <form th:action="@{/admin/delete/{id}(id=${report.id})}" method="post" style="display: inline;">
