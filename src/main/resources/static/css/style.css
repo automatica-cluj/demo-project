@@ -357,6 +357,87 @@ footer {
     margin-top: 2rem;
 }
 
+/* Job Management Styles */
+.job-card {
+    border-left-color: #9b59b6;
+}
+
+.job-card.completed {
+    border-left-color: #27ae60;
+}
+
+.job-card.failed {
+    border-left-color: #e74c3c;
+}
+
+.job-card.rejected {
+    border-left-color: #95a5a6;
+}
+
+.job-type {
+    background-color: #9b59b6;
+}
+
+.job-status {
+    margin: 1rem 0;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.status-pending {
+    background-color: #f39c12;
+    color: white;
+}
+
+.status-approved {
+    background-color: #3498db;
+    color: white;
+}
+
+.status-executing {
+    background-color: #9b59b6;
+    color: white;
+}
+
+.status-completed {
+    background-color: #27ae60;
+    color: white;
+}
+
+.status-failed {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.status-rejected {
+    background-color: #95a5a6;
+    color: white;
+}
+
+.job-result {
+    background-color: #ecf0f1;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.job-error {
+    background-color: #fadbd8;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #c0392b;
+}
+
 @media (max-width: 768px) {
     .hero h2 {
         font-size: 1.8rem;

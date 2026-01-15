@@ -13,6 +13,7 @@
             <h1>Fake News Reporter - Admin</h1>
             <nav>
                 <a th:href="@{/admin/dashboard}">Dashboard</a>
+                <a th:href="@{/admin/jobs}">Jobs</a>
                 <a th:href="@{/}">Public View</a>
                 <span sec:authentication="name">User</span>
                 <form th:action="@{/logout}" method="post" style="display: inline;">

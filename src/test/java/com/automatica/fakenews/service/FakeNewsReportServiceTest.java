@@ -23,6 +23,9 @@ class FakeNewsReportServiceTest {
     @Mock
     private FakeNewsReportRepository reportRepository;
 
+    @Mock
+    private JobService jobService;
+
     @InjectMocks
     private FakeNewsReportService reportService;
 
@@ -35,15 +38,25 @@ class FakeNewsReportServiceTest {
         report.setCategory("Politics");
         report.setDescription("This is a fake news source");
 
-        when(reportRepository.save(any(FakeNewsReport.class))).thenReturn(report);
+        FakeNewsReport savedReport = new FakeNewsReport();
+        savedReport.setId(1L);
+        savedReport.setNewsSource("Fake News Daily");
+        savedReport.setUrl("http://fakenews.com");
+        savedReport.setCategory("Politics");
+        savedReport.setDescription("This is a fake news source");
+
+        when(reportRepository.save(any(FakeNewsReport.class))).thenReturn(savedReport);
 
         // When
-        FakeNewsReport savedReport = reportService.saveReport(report);
+        FakeNewsReport result = reportService.saveReport(report);
 
         // Then
-        assertNotNull(savedReport);
+        assertNotNull(result);
         verify(reportRepository, times(1)).save(report);
-        assertEquals("Fake News Daily", savedReport.getNewsSource());
+        assertEquals("Fake News Daily", result.getNewsSource());
+        
+        // Verify job was created
+        verify(jobService, times(1)).createJob(eq("REPORT_VERIFICATION"), anyString());
     }
 
     @Test

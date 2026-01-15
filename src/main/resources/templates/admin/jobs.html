@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Management - Fake News Reporter</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Fake News Reporter - Job Management</h1>
+            <nav>
+                <a th:href="@{/admin/dashboard}">Dashboard</a>
+                <a th:href="@{/admin/jobs}">Jobs</a>
+                <a th:href="@{/}">Public View</a>
+                <span sec:authentication="name">User</span>
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <button type="submit" class="btn-link">Logout</button>
+                </form>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        
+        <section class="admin-section">
+            <h2>Pending Jobs (Awaiting Approval)</h2>
+            <div th:if="${pendingJobs.isEmpty()}" class="no-reports">
+                <p>No pending jobs to review.</p>
+            </div>
+            
+            <div class="admin-reports-list" th:if="${!pendingJobs.isEmpty()}">
+                <div class="admin-report-card job-card" th:each="job : ${pendingJobs}">
+                    <div class="report-header">
+                        <span class="category-badge job-type" th:text="${job.jobType}"></span>
+                        <span class="date" th:text="${#temporals.format(job.createdAt, 'MMM dd, yyyy HH:mm')}"></span>
+                    </div>
+                    <h3>Job #<span th:text="${job.id}"></span></h3>
+                    <p class="description" th:text="${job.jobData}"></p>
+                    <div class="job-status">
+                        <span class="status-badge status-pending" th:text="${job.status}"></span>
+                    </div>
+                    <div class="admin-actions">
+                        <form th:action="@{/admin/jobs/approve/{id}(id=${job.id})}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-success">Approve & Execute</button>
+                        </form>
+                        <form th:action="@{/admin/jobs/reject/{id}(id=${job.id})}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-danger" 
+                                    onclick="return confirm('Are you sure you want to reject this job?');">Reject</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section">
+            <h2>Approved & Executing Jobs</h2>
+            <div th:if="${approvedJobs.isEmpty()}" class="no-reports">
+                <p>No jobs currently approved or executing.</p>
+            </div>
+            
+            <div class="admin-reports-list" th:if="${!approvedJobs.isEmpty()}">
+                <div class="admin-report-card job-card approved" th:each="job : ${approvedJobs}">
+                    <div class="report-header">
+                        <span class="category-badge job-type" th:text="${job.jobType}"></span>
+                        <span class="date" th:text="${#temporals.format(job.createdAt, 'MMM dd, yyyy HH:mm')}"></span>
+                    </div>
+                    <h3>Job #<span th:text="${job.id}"></span></h3>
+                    <p class="description" th:text="${job.jobData}"></p>
+                    <div class="job-status">
+                        <span class="status-badge" 
+                              th:classappend="${job.status.name() == 'APPROVED'} ? 'status-approved' : 'status-executing'" 
+                              th:text="${job.status}"></span>
+                    </div>
+                    <div class="report-footer" th:if="${job.approvedBy}">
+                        <span class="verified">✓ Approved by: <span th:text="${job.approvedBy}"></span></span>
+                        <span class="date" th:if="${job.approvedAt}" 
+                              th:text="${' at ' + #temporals.format(job.approvedAt, 'MMM dd, yyyy HH:mm')}"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section">
+            <h2>Completed Jobs</h2>
+            <div th:if="${completedJobs.isEmpty()}" class="no-reports">
+                <p>No completed jobs yet.</p>
+            </div>
+            
+            <div class="admin-reports-list" th:if="${!completedJobs.isEmpty()}">
+                <div class="admin-report-card job-card" 
+                     th:classappend="${job.status.name() == 'COMPLETED'} ? 'completed' : (${job.status.name() == 'FAILED'} ? 'failed' : 'rejected')" 
+                     th:each="job : ${completedJobs}">
+                    <div class="report-header">
+                        <span class="category-badge job-type" th:text="${job.jobType}"></span>
+                        <span class="date" th:text="${#temporals.format(job.createdAt, 'MMM dd, yyyy HH:mm')}"></span>
+                    </div>
+                    <h3>Job #<span th:text="${job.id}"></span></h3>
+                    <p class="description" th:text="${job.jobData}"></p>
+                    <div class="job-status">
+                        <span class="status-badge" 
+                              th:classappend="${job.status.name() == 'COMPLETED'} ? 'status-completed' : (${job.status.name() == 'FAILED'} ? 'status-failed' : 'status-rejected')" 
+                              th:text="${job.status}"></span>
+                    </div>
+                    <div class="report-footer" th:if="${job.approvedBy}">
+                        <span class="verified">Approved by: <span th:text="${job.approvedBy}"></span></span>
+                        <span class="date" th:if="${job.approvedAt}" 
+                              th:text="${' at ' + #temporals.format(job.approvedAt, 'MMM dd, yyyy HH:mm')}"></span>
+                    </div>
+                    <div th:if="${job.executedAt}" class="job-result">
+                        <strong>Executed at:</strong> <span th:text="${#temporals.format(job.executedAt, 'MMM dd, yyyy HH:mm')}"></span>
+                    </div>
+                    <div th:if="${job.executionResult}" class="job-result">
+                        <strong>Result:</strong> <span th:text="${job.executionResult}"></span>
+                    </div>
+                    <div th:if="${job.errorMessage}" class="job-error">
+                        <strong>Error:</strong> <span th:text="${job.errorMessage}"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Fake News Reporter. Job Management Dashboard.</p>
+        </div>
+    </footer>
+</body>
+</html>

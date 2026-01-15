@@ -16,6 +16,9 @@ public class FakeNewsReportService {
     @Autowired
     private FakeNewsReportRepository reportRepository;
 
+    @Autowired
+    private JobService jobService;
+
     public List<FakeNewsReport> getApprovedReports() {
         return reportRepository.findByApprovedTrueOrderByApprovedAtDesc();
     }
@@ -34,7 +37,17 @@ public class FakeNewsReportService {
 
     @Transactional
     public FakeNewsReport saveReport(FakeNewsReport report) {
-        return reportRepository.save(report);
+        FakeNewsReport savedReport = reportRepository.save(report);
+        
+        // Create a job for report verification
+        String jobData = String.format("Report ID: %d, Source: %s, URL: %s, Category: %s", 
+            savedReport.getId(), 
+            savedReport.getNewsSource(), 
+            savedReport.getUrl(), 
+            savedReport.getCategory());
+        jobService.createJob("REPORT_VERIFICATION", jobData);
+        
+        return savedReport;
     }
 
     @Transactional
