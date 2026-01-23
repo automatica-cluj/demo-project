@@ -1,6 +1,7 @@
 package com.automatica.fakenews.controller;
 
 import com.automatica.fakenews.model.FakeNewsReport;
+import com.automatica.fakenews.model.ReportStatus;
 import com.automatica.fakenews.service.FakeNewsReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -21,41 +22,44 @@ public class AdminController {
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         List<FakeNewsReport> pendingReports = reportService.getPendingReports();
+        List<FakeNewsReport> inProgressReports = reportService.getInProgressReports();
         List<FakeNewsReport> approvedReports = reportService.getApprovedReports();
         List<FakeNewsReport> rejectedReports = reportService.getRejectedReports();
 
         model.addAttribute("pendingReports", pendingReports);
+        model.addAttribute("inProgressReports", inProgressReports);
         model.addAttribute("approvedReports", approvedReports);
         model.addAttribute("rejectedReports", rejectedReports);
 
         return "admin/dashboard";
     }
 
-    @PostMapping("/approve/{id}")
-    public String approveReport(@PathVariable Long id,
-                                Authentication authentication,
-                                RedirectAttributes redirectAttributes) {
+    @PostMapping("/report/{id}/status/{status}")
+    public String updateReportStatus(@PathVariable Long id,
+                                     @PathVariable String status,
+                                     Authentication authentication,
+                                     RedirectAttributes redirectAttributes) {
         String username = authentication.getName();
-        reportService.approveReport(id, username);
-        redirectAttributes.addFlashAttribute("successMessage", "Report approved successfully!");
+        ReportStatus reportStatus = ReportStatus.valueOf(status.toUpperCase());
+        reportService.setReportStatus(id, reportStatus, username);
+        redirectAttributes.addFlashAttribute("successMessage", "Report status updated successfully!");
         return "redirect:/admin/dashboard";
     }
 
-    @PostMapping("/reject/{id}")
-    public String rejectReport(@PathVariable Long id,
-                              Authentication authentication,
-                              RedirectAttributes redirectAttributes) {
-        String username = authentication.getName();
-        reportService.rejectReport(id, username);
-        redirectAttributes.addFlashAttribute("successMessage", "Report rejected successfully!");
+    @PostMapping("/report/{id}/in-progress")
+    public String markAsInProgress(@PathVariable Long id,
+                                   RedirectAttributes redirectAttributes) {
+        reportService.setInProgressReport(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Report marked as in progress!");
         return "redirect:/admin/dashboard";
     }
 
     @PostMapping("/delete/{id}")
-    public String deleteReport(@PathVariable Long id, 
+    public String deleteReport(@PathVariable Long id,
                                RedirectAttributes redirectAttributes) {
         reportService.deleteReport(id);
         redirectAttributes.addFlashAttribute("successMessage", "Report deleted successfully!");
         return "redirect:/admin/dashboard";
     }
 }
+

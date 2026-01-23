@@ -1,6 +1,7 @@
 package com.automatica.fakenews.service;
 
 import com.automatica.fakenews.model.FakeNewsReport;
+import com.automatica.fakenews.model.ReportStatus;
 import com.automatica.fakenews.repository.FakeNewsReportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,11 +18,15 @@ public class FakeNewsReportService {
     private FakeNewsReportRepository reportRepository;
 
     public List<FakeNewsReport> getApprovedReports() {
-        return reportRepository.findByApprovedTrueOrderByApprovedAtDesc();
+        return reportRepository.findByStatusOrderByProcessedAtDesc(ReportStatus.APPROVED);
     }
 
     public List<FakeNewsReport> getPendingReports() {
-        return reportRepository.findByApprovedFalseAndRejectedAtIsNullOrderByReportedAtDesc();
+        return reportRepository.findByStatusOrderByReportedAtDesc(ReportStatus.PENDING);
+    }
+
+    public List<FakeNewsReport> getInProgressReports() {
+        return reportRepository.findByStatusOrderByReportedAtDesc(ReportStatus.IN_PROGRESS);
     }
 
     public List<FakeNewsReport> getAllReports() {
@@ -38,34 +43,29 @@ public class FakeNewsReportService {
     }
 
     @Transactional
-    public void approveReport(Long id, String approvedBy) {
+    public void setReportStatus(Long id, ReportStatus status, String processedBy) {
         Optional<FakeNewsReport> reportOpt = reportRepository.findById(id);
         if (reportOpt.isPresent()) {
             FakeNewsReport report = reportOpt.get();
-            report.setApproved(true);
-            report.setApprovedAt(LocalDateTime.now());
-            report.setApprovedBy(approvedBy);
-            // Clear rejection fields if previously rejected
-            report.setRejectedAt(null);
-            report.setRejectedBy(null);
+            report.setStatus(status);
+            report.setProcessedAt(LocalDateTime.now());
+            report.setProcessedBy(processedBy);
             reportRepository.save(report);
         }
     }
 
     @Transactional
-    public void rejectReport(Long id, String rejectedBy) {
+    public void setInProgressReport(Long id) {
         Optional<FakeNewsReport> reportOpt = reportRepository.findById(id);
         if (reportOpt.isPresent()) {
             FakeNewsReport report = reportOpt.get();
-            report.setApproved(false);
-            report.setRejectedAt(LocalDateTime.now());
-            report.setRejectedBy(rejectedBy);
+            report.setStatus(ReportStatus.IN_PROGRESS);
             reportRepository.save(report);
         }
     }
 
     public List<FakeNewsReport> getRejectedReports() {
-        return reportRepository.findByRejectedAtIsNotNullOrderByRejectedAtDesc();
+        return reportRepository.findByStatusOrderByProcessedAtDesc(ReportStatus.REJECTED);
     }
 
     public List<FakeNewsReport> getPublicReports() {
@@ -77,3 +77,4 @@ public class FakeNewsReportService {
         reportRepository.deleteById(id);
     }
 }
+

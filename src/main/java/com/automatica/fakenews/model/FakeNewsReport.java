@@ -30,23 +30,19 @@ public class FakeNewsReport {
     @Column(nullable = false)
     private LocalDateTime reportedAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private boolean approved = false;
+    private ReportStatus status;
 
     @Column
-    private LocalDateTime approvedAt;
+    private LocalDateTime processedAt;
 
     @Column
-    private String approvedBy;
-
-    @Column
-    private LocalDateTime rejectedAt;
-
-    @Column
-    private String rejectedBy;
+    private String processedBy;
 
     public FakeNewsReport() {
         this.reportedAt = LocalDateTime.now();
+        this.status = ReportStatus.PENDING;
     }
 
     public Long getId() {
@@ -97,51 +93,43 @@ public class FakeNewsReport {
         this.reportedAt = reportedAt;
     }
 
+    public ReportStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ReportStatus status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getProcessedAt() {
+        return processedAt;
+    }
+
+    public void setProcessedAt(LocalDateTime processedAt) {
+        this.processedAt = processedAt;
+    }
+
+    public String getProcessedBy() {
+        return processedBy;
+    }
+
+    public void setProcessedBy(String processedBy) {
+        this.processedBy = processedBy;
+    }
+
     public boolean isApproved() {
-        return approved;
-    }
-
-    public void setApproved(boolean approved) {
-        this.approved = approved;
-    }
-
-    public LocalDateTime getApprovedAt() {
-        return approvedAt;
-    }
-
-    public void setApprovedAt(LocalDateTime approvedAt) {
-        this.approvedAt = approvedAt;
-    }
-
-    public String getApprovedBy() {
-        return approvedBy;
-    }
-
-    public void setApprovedBy(String approvedBy) {
-        this.approvedBy = approvedBy;
-    }
-
-    public LocalDateTime getRejectedAt() {
-        return rejectedAt;
-    }
-
-    public void setRejectedAt(LocalDateTime rejectedAt) {
-        this.rejectedAt = rejectedAt;
-    }
-
-    public String getRejectedBy() {
-        return rejectedBy;
-    }
-
-    public void setRejectedBy(String rejectedBy) {
-        this.rejectedBy = rejectedBy;
+        return status == ReportStatus.APPROVED;
     }
 
     public boolean isRejected() {
-        return !approved && rejectedAt != null;
+        return status == ReportStatus.REJECTED;
     }
 
     public boolean isPending() {
-        return !approved && rejectedAt == null;
+        return status == ReportStatus.PENDING;
+    }
+
+    public boolean isInProgress() {
+        return status == ReportStatus.IN_PROGRESS;
     }
 }

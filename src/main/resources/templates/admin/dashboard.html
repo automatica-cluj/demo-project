@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" 
+<html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
@@ -24,13 +24,13 @@
 
     <main class="container">
         <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-        
+
         <section class="admin-section">
             <h2>Pending Reports</h2>
             <div th:if="${pendingReports.isEmpty()}" class="no-reports">
                 <p>No pending reports to review.</p>
             </div>
-            
+
             <div class="admin-reports-list" th:if="${!pendingReports.isEmpty()}">
                 <div class="admin-report-card" th:each="report : ${pendingReports}">
                     <div class="report-header">
@@ -39,15 +39,52 @@
                     </div>
                     <h3 th:text="${report.newsSource}"></h3>
                     <p class="url">
-                        <strong>URL:</strong> 
+                        <strong>URL:</strong>
                         <a th:href="${report.url}" target="_blank" rel="noopener noreferrer" th:text="${report.url}"></a>
                     </p>
                     <p class="description" th:text="${report.description}"></p>
                     <div class="admin-actions">
-                        <form th:action="@{/admin/approve/{id}(id=${report.id})}" method="post" style="display: inline;">
+                        <form th:action="@{/admin/report/{id}/in-progress(id=${report.id})}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-info">In Progress</button>
+                        </form>
+                        <form th:action="@{/admin/report/{id}/status/approved(id=${report.id})}" method="post" style="display: inline;">
                             <button type="submit" class="btn btn-success">Approve</button>
                         </form>
-                        <form th:action="@{/admin/reject/{id}(id=${report.id})}" method="post" style="display: inline;">
+                        <form th:action="@{/admin/report/{id}/status/rejected(id=${report.id})}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-warning">Reject</button>
+                        </form>
+                        <form th:action="@{/admin/delete/{id}(id=${report.id})}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-danger"
+                                    onclick="return confirm('Are you sure you want to delete this report?');">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-section">
+            <h2>In Progress Reports</h2>
+            <div th:if="${inProgressReports.isEmpty()}" class="no-reports">
+                <p>No reports in progress.</p>
+            </div>
+
+            <div class="admin-reports-list" th:if="${!inProgressReports.isEmpty()}">
+                <div class="admin-report-card" th:each="report : ${inProgressReports}">
+                    <div class="report-header">
+                        <span class="category-badge" th:text="${report.category}"></span>
+                        <span class="date" th:text="${#temporals.format(report.reportedAt, 'MMM dd, yyyy HH:mm')}"></span>
+                    </div>
+                    <h3 th:text="${report.newsSource}"></h3>
+                    <p class="url">
+                        <strong>URL:</strong>
+                        <a th:href="${report.url}" target="_blank" rel="noopener noreferrer" th:text="${report.url}"></a>
+                    </p>
+                    <p class="description" th:text="${report.description}"></p>
+                    <div class="admin-actions">
+                        <form th:action="@{/admin/report/{id}/status/approved(id=${report.id})}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-success">Approve</button>
+                        </form>
+                        <form th:action="@{/admin/report/{id}/status/rejected(id=${report.id})}" method="post" style="display: inline;">
                             <button type="submit" class="btn btn-warning">Reject</button>
                         </form>
                         <form th:action="@{/admin/delete/{id}(id=${report.id})}" method="post" style="display: inline;">
@@ -64,25 +101,25 @@
             <div th:if="${approvedReports.isEmpty()}" class="no-reports">
                 <p>No approved reports yet.</p>
             </div>
-            
+
             <div class="admin-reports-list" th:if="${!approvedReports.isEmpty()}">
                 <div class="admin-report-card approved" th:each="report : ${approvedReports}">
                     <div class="report-header">
                         <span class="category-badge" th:text="${report.category}"></span>
-                        <span class="date" th:text="${#temporals.format(report.approvedAt, 'MMM dd, yyyy HH:mm')}"></span>
+                        <span class="date" th:text="${#temporals.format(report.processedAt, 'MMM dd, yyyy HH:mm')}"></span>
                     </div>
                     <h3 th:text="${report.newsSource}"></h3>
                     <p class="url">
-                        <strong>URL:</strong> 
+                        <strong>URL:</strong>
                         <a th:href="${report.url}" target="_blank" rel="noopener noreferrer" th:text="${report.url}"></a>
                     </p>
                     <p class="description" th:text="${report.description}"></p>
                     <div class="report-footer">
-                        <span class="verified">✓ Verified by: <span th:text="${report.approvedBy}"></span></span>
+                        <span class="verified">✓ Verified by: <span th:text="${report.processedBy}"></span></span>
                     </div>
                     <div class="admin-actions">
                         <form th:action="@{/admin/delete/{id}(id=${report.id})}" method="post" style="display: inline;">
-                            <button type="submit" class="btn btn-danger btn-sm" 
+                            <button type="submit" class="btn btn-danger btn-sm"
                                     onclick="return confirm('Are you sure you want to delete this report?');">Delete</button>
                         </form>
                     </div>
@@ -100,7 +137,7 @@
                 <div class="admin-report-card rejected" th:each="report : ${rejectedReports}">
                     <div class="report-header">
                         <span class="category-badge" th:text="${report.category}"></span>
-                        <span class="date" th:text="${#temporals.format(report.rejectedAt, 'MMM dd, yyyy HH:mm')}"></span>
+                        <span class="date" th:text="${#temporals.format(report.processedAt, 'MMM dd, aaaa HH:mm')}"></span>
                     </div>
                     <h3 th:text="${report.newsSource}"></h3>
                     <p class="url">
@@ -109,10 +146,10 @@
                     </p>
                     <p class="description" th:text="${report.description}"></p>
                     <div class="report-footer">
-                        <span class="rejected-badge">✗ Rejected by: <span th:text="${report.rejectedBy}"></span></span>
+                        <span class="rejected-badge">✗ Rejected by: <span th:text="${report.processedBy}"></span></span>
                     </div>
                     <div class="admin-actions">
-                        <form th:action="@{/admin/approve/{id}(id=${report.id})}" method="post" style="display: inline;">
+                        <form th:action="@{/admin/report/{id}/status/approved(id=${report.id})}" method="post" style="display: inline;">
                             <button type="submit" class="btn btn-success btn-sm">Approve</button>
                         </form>
                         <form th:action="@{/admin/delete/{id}(id=${report.id})}" method="post" style="display: inline;">
