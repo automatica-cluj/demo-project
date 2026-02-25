@@ -46,3 +46,6 @@ buildNumber.properties
 # OS
 .DS_Store
 Thumbs.db
+
+# Local secrets
+src/main/resources/application-local-secrets.yml

@@ -43,6 +43,35 @@
                         <a th:href="${report.url}" target="_blank" rel="noopener noreferrer" th:text="${report.url}"></a>
                     </p>
                     <p class="description" th:text="${report.description}"></p>
+
+                    <div class="ai-analysis" th:if="${report.detectionResult}">
+                        <strong>AI Analysis:</strong>
+                        <span class="ai-label"
+                              th:classappend="${#strings.equalsIgnoreCase(report.detectionResult, 'FAKE')} ? 'label-fake' : 'label-real'"
+                              th:text="${report.detectionResult}"></span>
+                        <span class="ai-score" th:text="${'(' + #numbers.formatDecimal(report.detectionScore, 1, 2) + ' score)'}"></span>
+                        <div class="ai-source" th:if="${report.detectionProvider != null}">
+                            <small th:text="${'Source: ' + report.detectionProvider}"></small>
+                        </div>
+                        <div class="ai-source" th:if="${report.detectionProvider != null and report.detectionProvider != 'HUGGING_FACE' and report.detectionDetails != null}">
+                            <small th:text="${'Fallback details: ' + report.detectionDetails}"></small>
+                        </div>
+
+                        <div class="ai-confidence-grid">
+                            <span th:text="${'Fake: ' + #numbers.formatDecimal(report.fakeProbability * 100, 1, 2) + '%'}"></span>
+                            <span th:text="${'Real: ' + #numbers.formatDecimal(report.realProbability * 100, 1, 2) + '%'}"></span>
+                            <span th:text="${'Margin: ' + #numbers.formatDecimal(report.aiMargin * 100, 1, 2) + '%'}"></span>
+                        </div>
+                        <div class="ai-recommendation"
+                             th:classappend="${report.aiRecommendation == 'REJECT'} ? 'recommend-reject' : 'recommend-approve'">
+                            <strong th:text="${'AI recommendation: ' + report.aiRecommendation}"></strong>
+                        </div>
+                    </div>
+                    <div class="ai-analysis ai-missing" th:if="${report.detectionResult == null}">
+                        <strong>AI Analysis:</strong>
+                        <span>Nu este disponibil inca pentru acest report.</span>
+                    </div>
+
                     <div class="admin-actions">
                         <form th:action="@{/admin/report/{id}/in-progress(id=${report.id})}" method="post" style="display: inline;">
                             <button type="submit" class="btn btn-info">In Progress</button>
@@ -80,6 +109,35 @@
                         <a th:href="${report.url}" target="_blank" rel="noopener noreferrer" th:text="${report.url}"></a>
                     </p>
                     <p class="description" th:text="${report.description}"></p>
+
+                    <div class="ai-analysis" th:if="${report.detectionResult}">
+                        <strong>AI Analysis:</strong>
+                        <span class="ai-label"
+                              th:classappend="${#strings.equalsIgnoreCase(report.detectionResult, 'FAKE')} ? 'label-fake' : 'label-real'"
+                              th:text="${report.detectionResult}"></span>
+                        <span class="ai-score" th:text="${'(' + #numbers.formatDecimal(report.detectionScore, 1, 2) + ' score)'}"></span>
+                        <div class="ai-source" th:if="${report.detectionProvider != null}">
+                            <small th:text="${'Source: ' + report.detectionProvider}"></small>
+                        </div>
+                        <div class="ai-source" th:if="${report.detectionProvider != null and report.detectionProvider != 'HUGGING_FACE' and report.detectionDetails != null}">
+                            <small th:text="${'Fallback details: ' + report.detectionDetails}"></small>
+                        </div>
+
+                        <div class="ai-confidence-grid">
+                            <span th:text="${'Fake: ' + #numbers.formatDecimal(report.fakeProbability * 100, 1, 2) + '%'}"></span>
+                            <span th:text="${'Real: ' + #numbers.formatDecimal(report.realProbability * 100, 1, 2) + '%'}"></span>
+                            <span th:text="${'Margin: ' + #numbers.formatDecimal(report.aiMargin * 100, 1, 2) + '%'}"></span>
+                        </div>
+                        <div class="ai-recommendation"
+                             th:classappend="${report.aiRecommendation == 'REJECT'} ? 'recommend-reject' : 'recommend-approve'">
+                            <strong th:text="${'AI recommendation: ' + report.aiRecommendation}"></strong>
+                        </div>
+                    </div>
+                    <div class="ai-analysis ai-missing" th:if="${report.detectionResult == null}">
+                        <strong>AI Analysis:</strong>
+                        <span>Nu este disponibil inca pentru acest report.</span>
+                    </div>
+
                     <div class="admin-actions">
                         <form th:action="@{/admin/report/{id}/status/approved(id=${report.id})}" method="post" style="display: inline;">
                             <button type="submit" class="btn btn-success">Approve</button>
@@ -137,7 +195,7 @@
                 <div class="admin-report-card rejected" th:each="report : ${rejectedReports}">
                     <div class="report-header">
                         <span class="category-badge" th:text="${report.category}"></span>
-                        <span class="date" th:text="${#temporals.format(report.processedAt, 'MMM dd, aaaa HH:mm')}"></span>
+                        <span class="date" th:text="${#temporals.format(report.processedAt, 'MMM dd, yyyy HH:mm')}"></span>
                     </div>
                     <h3 th:text="${report.newsSource}"></h3>
                     <p class="url">
@@ -148,14 +206,8 @@
                     <div class="report-footer">
                         <span class="rejected-badge">✗ Rejected by: <span th:text="${report.processedBy}"></span></span>
                     </div>
-                    <div class="admin-actions">
-                        <form th:action="@{/admin/report/{id}/status/approved(id=${report.id})}" method="post" style="display: inline;">
-                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
-                        </form>
-                        <form th:action="@{/admin/delete/{id}(id=${report.id})}" method="post" style="display: inline;">
-                            <button type="submit" class="btn btn-danger btn-sm"
-                                    onclick="return confirm('Are you sure you want to delete this report?');">Delete</button>
-                        </form>
+                    <div class="report-footer">
+                        <span>This report is final and cannot be modified.</span>
                     </div>
                 </div>
             </div>

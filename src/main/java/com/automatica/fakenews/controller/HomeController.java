@@ -18,8 +18,11 @@ import java.util.List;
 @Controller
 public class HomeController {
 
-    @Autowired
-    private FakeNewsReportService reportService;
+    private final FakeNewsReportService reportService;
+
+    public HomeController(FakeNewsReportService reportService) {
+        this.reportService = reportService;
+    }
 
     @GetMapping("/")
     public String home(Model model) {
@@ -56,8 +59,15 @@ public class HomeController {
         report.setCategory(reportForm.getCategory());
         report.setDescription(reportForm.getDescription());
 
-        reportService.saveReport(report);
-        redirectAttributes.addFlashAttribute("successMessage", 
+        FakeNewsReport savedReport = reportService.saveReport(report);
+
+        // Analyze the report with Hugging Face API
+        reportService.analyzeAndSetReportDetection(savedReport);
+
+        // Save the report again to store the analysis results
+        reportService.saveReport(savedReport);
+
+        redirectAttributes.addFlashAttribute("successMessage",
             "Thank you! Your report has been submitted and is pending approval.");
         
         return "redirect:/";

@@ -175,6 +175,14 @@ java -jar target/fake-news-reporter-1.0.0.jar
 - `DB_NAME` - Database name (default: fakenews)
 - `DB_USER` - Database username (default: postgres)
 - `DB_PASSWORD` - Database password (default: postgres)
+- `HUGGINGFACE_API_TOKEN` - Hugging Face access token (required for AI fake/real detection)
+- `HUGGINGFACE_API_URL` - Inference URL (optional override)
+
+Local example (PowerShell):
+```powershell
+$env:HUGGINGFACE_API_TOKEN="hf_xxx_your_token_here"
+mvn spring-boot:run
+```
 
 ## Security Notes
 

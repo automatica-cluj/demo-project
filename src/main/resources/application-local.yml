@@ -1,4 +1,7 @@
 spring:
+  config:
+    import: optional:classpath:application-local-secrets.yml
+
   datasource:
     url: jdbc:h2:mem:fakenews
     driver-class-name: org.h2.Driver
@@ -11,5 +14,6 @@ spring:
       path: /h2-console
   
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
 

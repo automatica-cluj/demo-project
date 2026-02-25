@@ -32,6 +32,8 @@ services:
       DB_NAME: fakenews
       DB_USER: postgres
       DB_PASSWORD: postgres
+      HUGGINGFACE_API_URL: ${HUGGINGFACE_API_URL:https://router.huggingface.co/hf-inference/models/mrm8488/bert-tiny-finetuned-fake-news-detection}
+      HUGGINGFACE_API_TOKEN: ${HUGGINGFACE_API_TOKEN:}
     ports:
       - "8080:8080"
     depends_on:

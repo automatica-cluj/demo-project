@@ -405,3 +405,61 @@ footer {
         width: 100%;
     }
 }
+
+
+.ai-analysis {
+    margin-top: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+.ai-analysis.ai-missing {
+    background-color: #f7f7f7;
+    color: #666;
+}
+
+.ai-confidence-grid {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    color: #2c3e50;
+    font-size: 0.9em;
+}
+
+.ai-recommendation {
+    margin-top: 8px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.recommend-reject {
+    background-color: #fdecea;
+    color: #b42318;
+}
+
+.recommend-approve {
+    background-color: #e8f7ee;
+    color: #157347;
+}
+
+.ai-label {
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: white;
+    font-weight: bold;
+}
+.label-fake {
+    background-color: #d9534f; /* Bootstrap's btn-danger color */
+}
+.label-real {
+    background-color: #5cb85c; /* Bootstrap's btn-success color */
+}
+.ai-score {
+    margin-left: 8px;
+    color: #555;
+    font-size: 0.9em;
+}
+

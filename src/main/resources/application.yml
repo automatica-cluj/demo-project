@@ -1,6 +1,9 @@
 spring:
   application:
     name: fake-news-reporter
+
+  config:
+    import: optional:classpath:application-local-secrets.yml
   
   profiles:
     active: ${SPRING_PROFILE:local}
@@ -23,3 +26,17 @@ logging:
   level:
     com.automatica: INFO
     org.springframework.security: INFO
+    org.springframework.web.servlet.handler.HandlerMappingIntrospector: ERROR
+
+
+huggingface:
+  api:
+    url: ${HUGGINGFACE_API_URL:https://router.huggingface.co/hf-inference/models/mrm8488/bert-tiny-finetuned-fake-news-detection}
+    token: ${HUGGINGFACE_API_TOKEN:}
+
+openai:
+  api:
+    url: ${OPENAI_API_URL:https://api.openai.com/v1/chat/completions}
+    token: ${OPENAI_API_TOKEN:}
+    model: ${OPENAI_API_MODEL:gpt-4o-mini}
+
